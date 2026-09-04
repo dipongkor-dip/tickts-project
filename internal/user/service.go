@@ -1,30 +1,70 @@
 package user
 
-import "gotickts/internal/user/dto"
+import (
+	"fmt"
+	"gotickts/internal/auth"
+	"gotickts/internal/user/dto"
+)
+
+var ErrInvalidCredentials = fmt.Errorf("Invalid email or password")
 
 type service struct {
-	r Repository
+	repo       Repository
+	jwtService auth.JWTService
 }
 
-func NewService(r Repository) *service {
-	return &service{r: r}
+func NewService(r Repository, jwtService auth.JWTService) *service {
+	return &service{repo: r, jwtService: jwtService}
 }
 
-func (s *service) CreateUser(req dto.CreateRequest) (*dto.Response, error) {
-	user := User{Name: req.Name, Email: req.Email, Password: req.Password}
+func (s *service) CreateUser(req dto.CreateRequest) (*dto.RegisterRes, error) {
+	user := User{Name: req.Name, Email: req.Email}
 
-	err := s.r.CreateUser(&user)
+	err := user.hashPassword(req.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	response := dto.Response{
-		ID:        user.ID,
+	err = s.repo.CreateUser(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	response := dto.RegisterRes{
 		Name:      user.Name,
 		Email:     user.Email,
-		Password:  user.Password,
 		CreatedAt: user.CreatedAt.String(),
 	}
 
 	return &response, nil
+}
+
+func (s *service) LoginUser(req dto.LoginRequest) (*dto.LoginRes, error) {
+	user, err := s.repo.LoginUser(req.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, ErrInvalidCredentials
+	}
+
+	err = user.comparePassword(req.Password)
+	if err != nil {
+		return nil, ErrInvalidCredentials
+	}
+
+	// generate token
+	token, err := s.jwtService.GenerateToken(user.ID, user.Email, user.Name)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to generate token: %w", err)
+	}
+
+	res := dto.LoginRes{
+		Name:  user.Name,
+		Email: user.Email,
+		Token: token,
+	}
+
+	return &res, nil
 }
