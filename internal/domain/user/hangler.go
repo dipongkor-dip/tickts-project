@@ -2,8 +2,8 @@ package user
 
 import (
 	"errors"
+	"gotickts/internal/domain/user/dto"
 	"gotickts/internal/httpresponse"
-	"gotickts/internal/user/dto"
 	"net/http"
 
 	"github.com/labstack/echo/v5"

@@ -3,7 +3,8 @@ package server
 import (
 	"fmt"
 	"gotickts/internal/config"
-	"gotickts/internal/user"
+	"gotickts/internal/domain/event"
+	"gotickts/internal/domain/user"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -13,10 +14,9 @@ import (
 )
 
 func Start(db *gorm.DB, cfg *config.Config) {
+	db.AutoMigrate(&user.User{}, &event.Event{})
+
 	e := echo.New()
-
-	db.AutoMigrate(&user.User{})
-
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
 
@@ -27,6 +27,7 @@ func Start(db *gorm.DB, cfg *config.Config) {
 	})
 
 	user.RegisterRoutes(e, db)
+	event.RegisterRoutes(e, db)
 
 	port := fmt.Sprintf(":%s", cfg.Port)
 	if err := e.Start(port); err != nil {

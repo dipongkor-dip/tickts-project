@@ -3,7 +3,7 @@ package user
 import (
 	"fmt"
 	"gotickts/internal/auth"
-	"gotickts/internal/user/dto"
+	"gotickts/internal/domain/user/dto"
 )
 
 var ErrInvalidCredentials = fmt.Errorf("Invalid email or password")
