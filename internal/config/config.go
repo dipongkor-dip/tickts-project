@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Port string
-	Dsn  string
+	Port       string
+	Dsn        string
+	JWT_secret string
 }
 
 func LoadEnv() *Config {
@@ -19,7 +20,8 @@ func LoadEnv() *Config {
 	}
 
 	return &Config{
-		Port: os.Getenv("port"),
-		Dsn:  os.Getenv("dsn"),
+		Port:       os.Getenv("port"),
+		Dsn:        os.Getenv("dsn"),
+		JWT_secret: os.Getenv("JWT_SECRET"),
 	}
 }

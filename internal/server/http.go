@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"gotickts/internal/config"
+	"gotickts/internal/domain/booking"
 	"gotickts/internal/domain/event"
 	"gotickts/internal/domain/user"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 )
 
 func Start(db *gorm.DB, cfg *config.Config) {
-	db.AutoMigrate(&user.User{}, &event.Event{})
+	db.AutoMigrate(&user.User{}, &event.Event{}, &booking.Booking{})
 
 	e := echo.New()
 	e.Use(middleware.RequestLogger())
@@ -26,8 +27,9 @@ func Start(db *gorm.DB, cfg *config.Config) {
 		return c.JSON(http.StatusOK, map[string]string{"message": "Hello, World!"})
 	})
 
-	user.RegisterRoutes(e, db)
+	user.RegisterRoutes(e, db, cfg)
 	event.RegisterRoutes(e, db)
+	booking.RegisterRoutes(e, db, cfg)
 
 	port := fmt.Sprintf(":%s", cfg.Port)
 	if err := e.Start(port); err != nil {

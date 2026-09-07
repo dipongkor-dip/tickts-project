@@ -92,3 +92,17 @@ func (h *handler) GetMe(c *echo.Context) error {
 		Email: email,
 	})
 }
+
+func (h *handler) getUsers(c *echo.Context) error {
+	users, err := h.service.getUsers()
+
+	if err != nil {
+		return c.JSON(http.StatusNotFound, httpresponse.Error{
+			Code:    http.StatusNotFound,
+			Message: "Users not found",
+			Details: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, users)
+}

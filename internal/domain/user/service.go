@@ -17,7 +17,7 @@ func NewService(r Repository, jwtService auth.JWTService) *service {
 	return &service{repo: r, jwtService: jwtService}
 }
 
-func (s *service) CreateUser(req dto.CreateRequest) (*dto.RegisterRes, error) {
+func (s *service) CreateUser(req dto.CreateRequest) (*dto.Response, error) {
 	user := User{Name: req.Name, Email: req.Email}
 
 	err := user.hashPassword(req.Password)
@@ -30,7 +30,7 @@ func (s *service) CreateUser(req dto.CreateRequest) (*dto.RegisterRes, error) {
 		return nil, err
 	}
 
-	response := dto.RegisterRes{
+	response := dto.Response{
 		Name:      user.Name,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt.String(),
@@ -39,7 +39,7 @@ func (s *service) CreateUser(req dto.CreateRequest) (*dto.RegisterRes, error) {
 	return &response, nil
 }
 
-func (s *service) LoginUser(req dto.LoginRequest) (*dto.LoginRes, error) {
+func (s *service) LoginUser(req dto.LoginRequest) (*dto.Response, error) {
 	user, err := s.repo.LoginUser(req.Email)
 	if err != nil {
 		return nil, err
@@ -60,11 +60,21 @@ func (s *service) LoginUser(req dto.LoginRequest) (*dto.LoginRes, error) {
 		return nil, fmt.Errorf("Failed to generate token: %w", err)
 	}
 
-	res := dto.LoginRes{
+	res := dto.Response{
 		Name:  user.Name,
 		Email: user.Email,
 		Token: token,
 	}
 
 	return &res, nil
+}
+
+func (s *service) getUsers() ([]*dto.Response, error) {
+	users, err := s.repo.getUsers()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

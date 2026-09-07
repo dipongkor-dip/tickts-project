@@ -15,15 +15,15 @@ type Repository interface {
 	Update(event *Event) error
 }
 
-type repository struct {
+type repo struct {
 	db *gorm.DB
 }
 
 func NewRepository(db *gorm.DB) Repository {
-	return &repository{db: db}
+	return &repo{db: db}
 }
 
-func (r *repository) Create(event *Event) error {
+func (r *repo) Create(event *Event) error {
 	// result := r.db.Create(event)
 	// if result.Error != nil {
 	// 	return result.Error
@@ -33,7 +33,7 @@ func (r *repository) Create(event *Event) error {
 	return r.db.Create(event).Error
 }
 
-func (r *repository) GetAll() ([]*Event, error) {
+func (r *repo) GetAll() ([]*Event, error) {
 	var events []*Event
 
 	err := r.db.Find(&events).Error
@@ -44,7 +44,7 @@ func (r *repository) GetAll() ([]*Event, error) {
 	return events, nil
 }
 
-func (r *repository) GetByID(eventId uint) (*Event, error) {
+func (r *repo) GetByID(eventId uint) (*Event, error) {
 	var event Event
 
 	err := r.db.First(&event, eventId).Error
@@ -59,6 +59,6 @@ func (r *repository) GetByID(eventId uint) (*Event, error) {
 	return &event, nil
 }
 
-func (r *repository) Update(event *Event) error {
+func (r *repo) Update(event *Event) error {
 	return r.db.Save(event).Error
 }
